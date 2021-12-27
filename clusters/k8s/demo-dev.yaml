@@ -1,16 +1,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: demoapp-dev
+  name: demo-dev
   namespace: flux-system
 spec:
   healthChecks:
   - kind: Deployment
-    name: demoapp-dev
-    namespace: demoapp-dev
+    name: demo-dev
+    namespace: demo-dev
   - kind: Deployment
     name: redis-dev
-    namespace: demoapp-dev
+    namespace: demo-dev
   interval: 1m0s
   path: ./infrastructure/overlays/dev
   prune: true
