@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: demoapp-dev
+namespace: demo-dev
 nameSuffix: -dev
 resources:
 - ../../bases/demoapp
@@ -9,7 +9,7 @@ transformers:
 - labels.yaml
 replicas:
 - count: 1
-  name: demoapp
+  name: demo
 images:
 - name: pakbaz82/sampleaspnet
   newTag: latest
