@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: demo
-        image: pakbaz82/sampleaspnet
+        image: pakbaz82/aspnet5small
         livenessProbe:
           httpGet:
             path: /index
