@@ -1,0 +1,23 @@
+Flag --validation has been deprecated, this arg is no longer used, all resources are validated using server-side apply dry-run
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: demoapp-dev
+  namespace: flux-system
+spec:
+  healthChecks:
+  - kind: Deployment
+    name: demoapp-dev
+    namespace: demoapp-dev
+  - kind: Deployment
+    name: redis-dev
+    namespace: demoapp-dev
+  interval: 1m0s
+  path: ./infrastructure/overlays/dev
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: demo
+  timeout: 2m0s
+
