@@ -16,15 +16,15 @@ spec:
     spec:
       containers:
       - name: demo
-        image: pakbaz82/aspnet5small
+        image: pakbaz82/sampleaspnet
         livenessProbe:
           httpGet:
-            path: /index
-            port: 8080
+            path: /
+            port: 80
         readinessProbe:
           httpGet:
-            path: /index
-            port: 8080
+            path: /
+            port: 80
         env:
         - name: REDISHOST
           value: "$(REDISSERVICE).$(REDISNAMESPACE):6379"
@@ -36,7 +36,7 @@ spec:
             cpu: 150m
             memory: 150Mi
         ports:
-        - containerPort: 8080
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
