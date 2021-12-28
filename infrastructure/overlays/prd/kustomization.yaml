@@ -26,5 +26,5 @@ replicas:
 - count: 3
   name: demo
 images:
-- name: pakbaz82/sampleaspnet
+- name: pakbaz82/aspnetdemoapp
   newTag: latest
