@@ -374,6 +374,97 @@ az k8s-configuration flux create -g flux-demo-rg -c flux-demo-arc -n gitops-demo
 > There is also another [Tutorial for CI/CD with Flux V2](https://docs.microsoft.com/en-us/azure/azure-arc/kubernetes/tutorial-gitops-flux2-ci-cd)
 >
 
+## Putting everything together w GitHub CodeSpaces
+
+1. Create New Private Repo or Clone this Repo. make note of **GITHUB_REPO** Configure security correctly (Lock main branch checkin pro feature)
+2. Open Codespaces (Beta or Subscription required)
+3. Download Flux by using Codespaces terminal bash:
+
+    ```bash
+    curl -s https://fluxcd.io/install.sh | sudo bash
+    ```
+
+4. Run codespaces bash terminal in elavated mode:
+
+    ```bash
+    sudo -i
+    ```
+
+5. Run `az login` and follow the instruction to login
+6. Run az aks create to create new cluster and make note of  **CLUSTER_NAME** and **RESOURCE_GROUP_NAME**
+7. Go to GitHub Organization Settings under user, go to developer settings and under Personal Access Tokens create one that has full access to the repository and make note of **GITHUB_TOKEN** generated as well as **GITHUB_USER** that you are acting on behalf of.
+8. Export all of the notes as parameters:
+
+```bash
+export GITHUB_TOKEN=ghp_****************
+export GITHUB_USER=pakbaz
+export GITHUB_REPO=flux-single-repo
+export CLUSTER_NAME=k8s_cluster
+export RESOURCE_GROUP_NAME=k8s_rg
+```
+
+9. Run the following command to connect to AKS and merge credentials into current context:
+
+```bash
+az aks get-credentials -n $CLUSTER_NAME -g $RESOURCE_GROUP_NAME
+```
+
+10. Now to make sure everything is correctly set, run the flux precheck to make sure everything is in order:
+
+```bash
+flux check --pre
+
+should get result similar to following:
+► checking prerequisites
+✔ Kubernetes 1.20.9 >=1.19.0-0
+✔ prerequisites checks passed
+```
+
+11. Time to bootstrap flux for the respository:
+
+    ```bash
+    flux bootstrap github \
+    --owner=$GITHUB_USER \
+    --repository=$GITHUB_REPO \
+    --branch=main \
+    --path=./clusters/$CLUSTER_NAME \
+    --personal
+    ```
+
+    You should see how Flux starts to install and sync its components and eventually get a confirmation that all components are healthy.
+
+    ```bash
+    ► connecting to github.com
+    ► cloning branch "main" from Git repository "https://github.com/<<GITHUB_USER>>/<<GITHUB_REPO>>.git"
+    ✔ cloned repository
+    [...]
+    ✔ kustomize-controller: deployment ready
+    ✔ helm-controller: deployment ready
+    ✔ all components are healthy
+    ```
+
+    Additionally, you can run the following command to validate the Flux installation.
+
+    ```bash
+    flux check
+    ```
+
+    Output.
+
+    ```bash
+    ► checking prerequisites
+    [...]
+    ► checking controllers
+    [...]
+    ✔ all checks passed
+    ```
+
+12. Pull the latest updates published by Flux from the repository.
+
+    ```bash
+    git pull origin main
+    ```
+
 ## FAQ
 
 - **Is my project ready for GitOps?**  
