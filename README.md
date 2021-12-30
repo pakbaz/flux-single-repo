@@ -319,6 +319,55 @@ For more information on notification and webhook setups check out official guide
 - <https://fluxcd.io/docs/guides/notifications/>
 - <https://fluxcd.io/docs/guides/webhook-receivers/>
 
+### 6. Automate Image Updates to Git
+
+We could build a process that upon successful image push to a repository e.g. ACR, updates the YAML file and mark the correct image Tag to be pushed to AKS. We we can certainly do that as part of a new release pull request as well but in the spirit of maximizing automation, we can certainly turn that into step after image deployment in GitHub Action for instance. However, doing that requires perfect coordination and it gets complicated when it gets decentralized i.e. image is built and pushed in another repository. To solve that problem, people who created Flux CD GitOps Toolkit have created Image automation controllers which includes components like Image Repository, Image Policy and Image Update Automation CRDs.
+
+To build such mechanism using Flux CLI, after bootstrapping and establishing CD based on YAML manifests e.g. Kustomization, we need to create image repository reference:
+
+```sh
+flux create image repository demoapp \
+--image={Your ACR}.azurecr.io/demoapp \
+--interval=1m \
+--export > ./clusters/$CLUSTER_NAME/imagerepo-demoapp.yaml
+```
+
+Now We need to define the image policy. There are plenty of policy options to choose from numerical, alphabetical and semantic versioning (semver) as defined below:
+
+```sh
+flux create image policy demoapp \
+--image-ref=demoapp \
+--select-semver=1.0.x \
+--export > ./clusters/$CLUSTER_NAME/imagepolicy-demoapp.yaml
+```
+
+> A semver range that includes stable releases can be defined with 1.0.x (patch versions only) or >=1.0.0 <2.0.0 (minor and patch versions). If you want to include pre-release e.g. 1.0.0-rc.1, you can define a range like: ^1.x-0 or >1.0.0-rc <2.0.0-rc.
+
+For more information on image policy options please [check out documentations](https://fluxcd.io/docs/components/image/imagepolicies/)  
+
+All you need to do now is to update your pod deployment manifest yaml file and add a marker to tell Flux which policy to use when updating the container image:  
+
+```sh
+spec:
+  containers:
+  - name: podinfod
+    image: ghcr.io/stefanprodan/podinfo:5.0.0 # {"$imagepolicy": "flux-system:demoapp"}
+```
+
+Last but not least you need to create image update flux controller to do the job of updating the yaml file in your source code whenever there is a new image found based on criteria defined on image policy inside your predefined image repository:
+
+```sh
+flux create image update flux-system \
+--git-repo-ref=flux-system \
+--git-repo-path="./clusters/my-cluster" \
+--checkout-branch=main \
+--push-branch=main \
+--author-name=fluxcdbot \
+--author-email=fluxcdbot@users.noreply.github.com \
+--commit-template="{{range .Updated.Images}}{{println .}}{{end}}" \
+--export > ./clusters/$CLUSTER_NAME/flux-system-automation.yaml
+```
+
 ## Multi-Cluster , Multi-Cloud and Hybrid Solution with Azure Arc-enabled Kubernetes
 
 If you are dealing with Multi-Cluster, Multi-Cloud or Even Hybrid Solutions it might be easier, and more secure to use Azure Arc-enabled Kubernetes Services which is offered at no additional cost other AKS regular cost that provides a huge value for cluster management.  

@@ -3,6 +3,11 @@ var app = builder.Build();
 
 app.MapGet("/", async context =>
                 {
+                    await context.Response.WriteAsync( $"----------------------------------------------{Environment.NewLine}");
+                    await context.Response.WriteAsync( $"App Version: 1.0.2 {Environment.NewLine}");
+                    await context.Response.WriteAsync( $"----------------------------------------------{Environment.NewLine}");
+                    await context.Response.WriteAsync( Environment.NewLine );
+                    await context.Response.WriteAsync( Environment.NewLine );
                     await context.Response.WriteAsync( $"Environment:{Environment.NewLine}");
                     await context.Response.WriteAsync( $"----------------------------------------------{Environment.NewLine}");
                     await context.Response.WriteAsync( $"OS Version: {Environment.OSVersion} {Environment.NewLine}");
